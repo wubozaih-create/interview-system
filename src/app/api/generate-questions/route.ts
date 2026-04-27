@@ -13,25 +13,11 @@ interface Question {
   excellentStandard: string;
 }
 
-function extractTextFromFile(file: File): Promise<string> {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      resolve(reader.result as string);
-    };
-    reader.onerror = () => {
-      resolve('');
-    };
-    
-    if (file.type.startsWith('text/') || 
-        file.name.endsWith('.txt') || 
-        file.name.endsWith('.md') ||
-        file.type === 'application/json') {
-      reader.readAsText(file);
-    } else {
-      resolve(`[文件: ${file.name}, 类型: ${file.type}, 大小: ${(file.size / 1024).toFixed(1)}KB]`);
-    }
-  });
+function getFileDescription(file: File): string {
+  const sizeKB = (file.size / 1024).toFixed(1);
+  const fileType = file.type || 'unknown';
+  const fileName = file.name;
+  return `[文件信息: ${fileName}, 类型: ${fileType}, 大小: ${sizeKB}KB - 请参考表单中的文本输入内容]`;
 }
 
 export async function POST(request: NextRequest) {
@@ -58,12 +44,11 @@ export async function POST(request: NextRequest) {
         let jdContent = jdText;
 
         if (jdFile) {
-          const fileText = await extractTextFromFile(jdFile);
-          jdContent = jdContent || fileText;
+          jdContent = jdContent || getFileDescription(jdFile);
         }
 
         if (!jdContent.trim()) {
-          send({ type: 'error', message: '请提供有效的岗位JD' });
+          send({ type: 'error', message: '请提供有效的岗位JD（上传文件或输入文本）' });
           controller.close();
           return;
         }
