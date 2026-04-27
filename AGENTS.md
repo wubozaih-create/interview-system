@@ -1,65 +1,101 @@
-# 项目上下文
+# 智能面试系统 - AGENTS.md
 
-### 版本技术栈
+## 项目概述
 
-- **Framework**: Next.js 16 (App Router)
-- **Core**: React 19
-- **Language**: TypeScript 5
-- **UI 组件**: shadcn/ui (基于 Radix UI)
-- **Styling**: Tailwind CSS 4
+智能面试系统是一个基于AI技术的专业面试管理平台，为HR和面试官提供端到端的简历分析、面试题库生成、面试评估与优化建议解决方案。
+
+## 技术栈
+
+- **框架**: Next.js 16 (App Router)
+- **核心**: React 19
+- **语言**: TypeScript 5
+- **UI组件**: shadcn/ui (基于 Radix UI)
+- **样式**: Tailwind CSS 4
+- **AI集成**: coze-coding-dev-sdk (流式输出)
 
 ## 目录结构
 
 ```
-├── public/                 # 静态资源
-├── scripts/                # 构建与启动脚本
-│   ├── build.sh            # 构建脚本
-│   ├── dev.sh              # 开发环境启动脚本
-│   ├── prepare.sh          # 预处理脚本
-│   └── start.sh            # 生产环境启动脚本
-├── src/
-│   ├── app/                # 页面路由与布局
-│   ├── components/ui/      # Shadcn UI 组件库
-│   ├── hooks/              # 自定义 Hooks
-│   ├── lib/                # 工具库
-│   │   └── utils.ts        # 通用工具函数 (cn)
-│   └── server.ts           # 自定义服务端入口
-├── next.config.ts          # Next.js 配置
-├── package.json            # 项目依赖管理
-└── tsconfig.json           # TypeScript 配置
+src/
+├── app/
+│   ├── layout.tsx          # 根布局
+│   ├── page.tsx           # 首页 - 简历分析 + 面试题库生成
+│   ├── globals.css        # 全局样式
+│   ├── questions/         # 面试题库管理页面
+│   │   └── page.tsx
+│   ├── evaluation/        # 面试评估页面
+│   │   └── page.tsx
+│   ├── optimization/      # 题库优化页面
+│   │   └── page.tsx
+│   └── api/              # API路由
+│       ├── analyze/      # 简历分析API
+│       │   └── route.ts
+│       ├── generate-questions/  # 面试题库生成API
+│       │   └── route.ts
+│       ├── evaluate-interview/  # 面试评估API
+│       │   └── route.ts
+│       └── optimize-questions/  # 题库优化API
+│           └── route.ts
+├── components/
+│   ├── navigation.tsx    # 导航栏组件
+│   ├── file-uploader.tsx  # 文件上传组件
+│   └── analysis-panel.tsx # 分析面板组件
+└── lib/
+    └── utils.ts          # 工具函数
 ```
 
-- 项目文件（如 app 目录、pages 目录、components 等）默认初始化到 `src/` 目录下。
+## 核心功能
 
-## 包管理规范
+### 1. 简历分析 (首页 /)
+- 支持JD和简历的文件上传或文本输入
+- AI流式分析简历与JD的匹配度
+- 输出综合评分、技能匹配度、经验匹配度
+- 识别候选人优势和风险点
+- 提供录用建议
 
-**仅允许使用 pnpm** 作为包管理器，**严禁使用 npm 或 yarn**。
-**常用命令**：
-- 安装依赖：`pnpm add <package>`
-- 安装开发依赖：`pnpm add -D <package>`
-- 安装所有依赖：`pnpm install`
-- 移除依赖：`pnpm remove <package>`
+### 2. 面试题库生成
+- 基于JD和候选人画像生成结构化面试题
+- 按初试、复试、终面环节分类
+- 涵盖专业能力、通用能力、业务理解、文化适配四个维度
+- 每道题包含考察要点和优秀答案标准
 
-## 开发规范
+### 3. 面试评估 (/evaluation)
+- 支持面试对话记录上传
+- AI评估候选人各维度表现
+- 输出雷达图评分、详细评价
+- 风险提示和录用建议
 
-### 编码规范
+### 4. 题库优化 (/optimization)
+- 分析历史面试数据
+- 提供新增、修改、删除、优化建议
+- 按优先级排序
 
-- 默认按 TypeScript `strict` 心智写代码；优先复用当前作用域已声明的变量、函数、类型和导入，禁止引用未声明标识符或拼错变量名。
-- 禁止隐式 `any` 和 `as any`；函数参数、返回值、解构项、事件对象、`catch` 错误在使用前应有明确类型或先完成类型收窄，并清理未使用的变量和导入。
+## 开发命令
 
-### next.config 配置规范
+```bash
+# 安装依赖
+pnpm install
 
-- 配置的路径不要写死绝对路径，必须使用 path.resolve(__dirname, ...)、import.meta.dirname 或 process.cwd() 动态拼接。
+# 开发环境
+pnpm dev
 
-### Hydration 问题防范
+# 构建生产版本
+pnpm build
 
-1. 严禁在 JSX 渲染逻辑中直接使用 typeof window、Date.now()、Math.random() 等动态数据。**必须使用 'use client' 并配合 useEffect + useState 确保动态内容仅在客户端挂载后渲染**；同时严禁非法 HTML 嵌套（如 <p> 嵌套 <div>）。
-2. **禁止使用 head 标签**，优先使用 metadata，详见文档：https://nextjs.org/docs/app/api-reference/functions/generate-metadata
-   1. 三方 CSS、字体等资源可在 `globals.css` 中顶部通过 `@import` 引入或使用 next/font
-   2. preload, preconnect, dns-prefetch 通过 ReactDOM 的 preload、preconnect、dns-prefetch 方法引入
-   3. json-ld 可阅读 https://nextjs.org/docs/app/guides/json-ld
+# 类型检查
+pnpm ts-check
 
-## UI 设计与组件规范 (UI & Styling Standards)
+# 代码检查
+pnpm lint
+```
 
-- 模板默认预装核心组件库 `shadcn/ui`，位于`src/components/ui/`目录下
-- Next.js 项目**必须默认**采用 shadcn/ui 组件、风格和规范，**除非用户指定用其他的组件和规范。**
+## 环境变量
+
+系统自动从环境变量读取配置，无需手动设置。
+
+## 注意事项
+
+1. 所有AI相关功能使用流式输出，通过SSE协议实现
+2. API路由统一使用 `coze-coding-dev-sdk` 的 LLMClient
+3. 文件上传支持 PDF、Word、图片、文本格式
+4. 最大文件限制: 10MB
