@@ -9,7 +9,11 @@
       }
     ]
   ],
-  "plugins": [
-    "@react-dev-inspector/babel-plugin"
-  ]
+  "env": {
+    "development": {
+      "plugins": [
+        "@react-dev-inspector/babel-plugin"
+      ]
+    }
+  }
 }
